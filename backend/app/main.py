@@ -16,6 +16,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Project API",
+        root_path="/api",
         lifespan=lifespan,
     )
 

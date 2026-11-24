@@ -5,7 +5,7 @@ from sqlmodel import select
 
 from app.db import DependsSession
 
-router = APIRouter(prefix="/api")
+router = APIRouter()
 
 
 @router.get("/status")

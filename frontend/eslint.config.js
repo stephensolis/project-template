@@ -1,102 +1,75 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import react from 'eslint-plugin-react'
-import importPlugin from 'eslint-plugin-import'
-import prettierRecommended from 'eslint-plugin-prettier/recommended'
+import js from "@eslint/js";
+import eslintReact from "@eslint-react/eslint-plugin";
+import { defineConfig, globalIgnores } from "eslint/config";
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
+import { importX } from "eslint-plugin-import-x";
+import jestDom from "eslint-plugin-jest-dom";
+import prettierRecommended from "eslint-plugin-prettier/recommended";
+import reactHooks from "eslint-plugin-react-hooks";
+import { reactRefresh } from "eslint-plugin-react-refresh";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import testingLibrary from "eslint-plugin-testing-library";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig(
+  globalIgnores(["dist", "src/services"]),
+
   {
-    ignores: [
-      'dist'
-    ]
-  },
-  {
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      tseslint.configs.stylistic,
-      react.configs.flat.recommended,
-      react.configs.flat['jsx-runtime'],
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.recommended,
-      importPlugin.flatConfigs.recommended,
-      prettierRecommended,
-    ],
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2021,
-      globals: globals.browser,
-      parserOptions: {
-        project: './tsconfig.json',
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
+    extends: [js.configs.recommended, importX.flatConfigs.recommended],
+    plugins: { "simple-import-sort": simpleImportSort },
     settings: {
-      react: {
-        version: 'detect',
-      },
+      "import-x/resolver-next": [createTypeScriptImportResolver()]
     },
     rules: {
-      // React Refresh rules
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "import-x/first": "error",
+      "import-x/newline-after-import": "error",
 
-      // React rules
-      'react/prop-types': 'off', // Not needed with TypeScript
-      'react/jsx-uses-react': 'error',
-      'react/jsx-uses-vars': 'error',
-      'react/jsx-no-undef': 'error',
-      'react/jsx-key': 'error',
-      'react/jsx-no-duplicate-props': 'error',
-      'react/no-direct-mutation-state': 'error',
-      'react/no-deprecated': 'warn',
-      'react/self-closing-comp': 'warn',
-
-      // Import rules
-      'import/no-unresolved': 'off', // TypeScript handles this
-      'import/named': 'error',
-      'import/namespace': 'error',
-      'import/no-duplicates': 'error',
-      'import/order': ['warn', {
-        'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-        'pathGroups': ['assets', 'components', 'contexts', 'hooks', 'pages', 'services', 'styles', 'utils'].map(dir => ({
-          pattern: `${dir}/**`,
-          group: 'internal'
-        })),
-        'pathGroupsExcludedImportTypes': ['builtin'],
-        'newlines-between': 'always',
-        'alphabetize': { 'order': 'asc', 'caseInsensitive': true }
-      }],
-
-      // TypeScript specific rules
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'off', // Too restrictive
-      '@typescript-eslint/explicit-module-boundary-types': 'off', // Too restrictive
-      '@typescript-eslint/no-unused-vars': ['warn', {
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-      }],
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      '@typescript-eslint/prefer-optional-chain': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-
-      // General JavaScript best practices
-      'no-console': ['warn', { allow: ['error'] }],
-      'no-debugger': 'warn',
-      'eqeqeq': ['error', 'always', { 'null': 'ignore' }],
-      'no-var': 'error',
-      'prefer-const': 'warn',
-      'prefer-template': 'warn',
-      'object-shorthand': 'warn'
-    },
+      "no-console": ["warn", { allow: ["error"] }],
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      "object-shorthand": "warn",
+      "prefer-template": "warn"
+    }
   },
-)
+
+  {
+    files: ["**/*.js"],
+    languageOptions: { globals: globals.node }
+  },
+
+  {
+    files: ["**/*.{ts,tsx}"],
+    extends: [
+      tseslint.configs.recommendedTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
+      importX.flatConfigs.typescript,
+      eslintReact.configs["recommended-type-checked"],
+      reactHooks.configs.flat.recommended,
+      eslintReact.configs["disable-conflict-eslint-plugin-react-hooks"],
+      reactRefresh.configs.vite()
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
+    rules: {
+      "import-x/default": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }
+      ]
+    }
+  },
+
+  {
+    files: ["src/**/*.{test,spec}.{ts,tsx}", "test/**/*.{ts,tsx}"],
+    extends: [testingLibrary.configs["flat/react"], jestDom.configs["flat/recommended"]]
+  },
+
+  prettierRecommended
+);

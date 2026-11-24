@@ -1,28 +1,29 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import basicSsl from "@vitejs/plugin-basic-ssl";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), basicSsl()],
   resolve: {
-    alias: {
-      'assets': '/src/assets',
-      'components': '/src/components',
-      'contexts': '/src/contexts',
-      'hooks': '/src/hooks',
-      'pages': '/src/pages',
-      'services': '/src/services',
-      'styles': '/src/styles',
-      'utils': '/src/utils'
-    }
+    tsconfigPaths: true
   },
   server: {
+    port: Number(process.env.FRONTEND_PORT) || 14000,
+    strictPort: true,
+    cors: false,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+      "/api": {
+        target: `http://127.0.0.1:${process.env.BACKEND_PORT}`,
+        rewrite: (path) => path.replace(/^\/api/, "")
       }
     }
+  },
+  test: {
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./test/setupTest.ts",
+    css: true,
+    poolOptions: { forks: { execArgv: ["--no-experimental-webstorage"] } }
   }
-})
+});
