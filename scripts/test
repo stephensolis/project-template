@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -xe
+
+pushd backend
+uv run poe static-checks
+uv run poe test
+popd
+
+pushd frontend
+yarn lint
+yarn test
+popd

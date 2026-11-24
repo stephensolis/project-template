@@ -1,9 +1,14 @@
+volumes:
+  db_volume:
+
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - db_volume:/var/lib/postgresql/data
     ports:
       - 5432:5432

@@ -1,9 +1,15 @@
+import os
+
 from fastapi import APIRouter
+from sqlmodel import select
+
+from app.db import DependsSession
 
 router = APIRouter(prefix="/api")
 
 
 @router.get("/status")
-async def status_check() -> dict[str, str]:
-    """Status check endpoint."""
-    return {"status": "healthy"}
+async def status_check(session: DependsSession) -> dict[str, str]:
+    await session.exec(select(True))
+
+    return {"status": "ok", "version": os.environ.get("VERSION", "unknown")}

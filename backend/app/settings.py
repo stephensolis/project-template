@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         "env_file": ".env",
     }
 
-    cors_origins: list[str] = ["*"]
+    database_url: str
 
 
 @lru_cache(maxsize=1)
